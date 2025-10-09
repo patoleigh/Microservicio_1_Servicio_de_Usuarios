@@ -12,10 +12,6 @@ Microservicio de Usuarios.
 - Perfil básico (/users/me).
 - Emisión de eventos en RabbitMQ (user.created, user.updated).
 """,
-    contact={"name": "Equipo X", "email": "equipo@example.com"},
-    openapi_url="/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc"
 )
 
 @app.get("/health", tags=["meta"])
