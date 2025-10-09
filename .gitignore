@@ -1,0 +1,43 @@
+# --- Entorno / dependencias ---
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# --- Python cache ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# --- Config/secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Herramientas / pruebas ---
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- IDE/OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Docker ---
+*.log
+# Si usas volúmenes mapeados a carpetas, ignóralas aquí (si existieran)
+# e.g. data/, tmp/, etc.
+
+# --- Alembic (mantén solo código y migrations) ---
+alembic/*.pyc
+alembic/**/__pycache__/
+
+# --- Sistemas CI/otros ---
+*.swp
