@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-gateway-config
+  labels:
+    app: api-gateway
+data:
+  APP_NAME: "api-gateway"
+  APP_VERSION: "v1"
+  ENV: "production"
+  JWT_ALG: "HS256"
+  # URLs internas de los microservicios (dentro del cluster K8s)
+  USERS_SERVICE_URL: "http://users-service.default.svc.cluster.local:80"
+  MODERATION_SERVICE_URL: "http://moderation-service.default.svc.cluster.local:8000"
+  MESSAGES_SERVICE_URL: "http://messages-service.default.svc.cluster.local:80"
+  SEARCH_SERVICE_URL: "http://search-service.default.svc.cluster.local:8000"
+  PRESENCE_SERVICE_URL: "http://presence-service.default.svc.cluster.local:80"
+  CHANNEL_SERVICE_URL: "http://channel-api-service.default.svc.cluster.local:8000"
+  FILES_SERVICE_URL: "http://file-service-api.file-service.svc.cluster.local:80"
+  # Path prefix para Ingress
+  ROOT_PATH: "/apigateway"
