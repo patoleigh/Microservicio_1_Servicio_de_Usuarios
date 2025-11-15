@@ -41,3 +41,10 @@ alembic/**/__pycache__/
 
 # --- Sistemas CI/otros ---
 *.swp
+
+# --- Cluster ---
+kubeconfig.yaml
+
+# --- Kubernetes Secrets (NO SUBIR) ---
+k8s/*-secret.yaml
+k8s/*-secret.yml

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service
+  labels:
+    app: users-service
+spec:
+  replicas: 1  # El HPA ajustará esto automáticamente
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+    spec:
+      initContainers:
+        # Esperar a que PostgreSQL esté listo
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres.default.svc.cluster.local 5432; do
+                echo "Waiting for postgres..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+        # Ejecutar migraciones de Alembic
+        - name: run-migrations
+          image: ghcr.io/carlosvera81/microservicio_1_servicio_de_usuarios:latest
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            - configMapRef:
+                name: users-service-config
+            - secretRef:
+                name: users-service-secret
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql+psycopg2://postgres:$(POSTGRES_PASSWORD)@postgres.default.svc.cluster.local:5432/usersdb"
+      containers:
+        - name: users-service
+          image: ghcr.io/carlosvera81/microservicio_1_servicio_de_usuarios:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: users-service-config
+            - secretRef:
+                name: users-service-secret
+          env:
+            # Obtener contraseña desde secret y construir DATABASE_URL
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql+psycopg2://postgres:$(POSTGRES_PASSWORD)@postgres.default.svc.cluster.local:5432/usersdb"
+            # ROOT_PATH para que FastAPI funcione correctamente detrás del path prefix
+            - name: ROOT_PATH
+              value: "/usersservice"
+          resources:
+            requests:
+              cpu: "100m"      # Mínimo para HPA
+              memory: "128Mi"
+            limits:
+              cpu: "500m"      # Máximo permitido
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      imagePullSecrets:
+        - name: ghcr-secret  # Secret para autenticar con GitHub Container Registry

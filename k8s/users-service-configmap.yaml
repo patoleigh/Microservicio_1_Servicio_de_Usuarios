@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-service-config
+  labels:
+    app: users-service
+data:
+  APP_NAME: "users-service"
+  APP_VERSION: "v1"
+  ENV: "production"
+  JWT_ALG: "HS256"
+  JWT_EXPIRES_MIN: "60"
+  # RabbitMQ existente en el cluster
+  RABBITMQ_URL: "amqp://guest:guest@message-broker.default.svc.cluster.local:5672/"
+  RABBITMQ_EXCHANGE: "users.events"
+  # PostgreSQL interno (la contraseña viene de postgres-secret via DB_PASSWORD)
+  DATABASE_HOST: "postgres.default.svc.cluster.local"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "usersdb"
+  DATABASE_USER: "postgres"

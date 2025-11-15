@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Servidor de Let's Encrypt (producción)
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Email para notificaciones de expiración de certificados
+    email: admin@inf326.nursoft.dev  # Cambiar al email del administrador
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      # Solver HTTP01 con nginx ingress
+      - http01:
+          ingress:
+            class: nginx

@@ -24,6 +24,7 @@ Emite **eventos de dominio** a RabbitMQ en cada transacción relevante:
 - [Variables de entorno](#variables-de-entorno)
 - [Cómo correr (local con entorno virtual)](#cómo-correr-local-con-entorno-virtual)
 - [Cómo correr (Docker)](#cómo-correr-docker)
+- [Cómo desplegar en Kubernetes](#cómo-desplegar-en-kubernetes)
 - [Migraciones](#migraciones)
 - [Manejo de errores](#manejo-de-errores)
 - [Observabilidad y salud](#observabilidad-y-salud)
@@ -276,6 +277,143 @@ docker-compose up --build
 
 ---
 
+## Cómo desplegar en Kubernetes
+
+### Requisitos previos
+
+- Cluster de Kubernetes configurado (DigitalOcean Kubernetes)
+- `kubectl` instalado y configurado con acceso al cluster
+- Ingress Controller (nginx) instalado en el cluster
+- cert-manager configurado para SSL/TLS automático
+- RabbitMQ existente en el cluster como servicio `message-broker`
+
+### Estructura de manifiestos K8s
+
+```
+k8s/
+├── postgres-configmap.yaml       # Variables de entorno de PostgreSQL
+├── postgres-secret.yaml          # Contraseña de PostgreSQL
+├── postgres-pvc.yaml             # Almacenamiento persistente (5Gi)
+├── postgres-statefulset.yaml     # StatefulSet de PostgreSQL
+├── postgres-service.yaml         # Service interno de PostgreSQL
+├── users-service-configmap.yaml  # Variables de entorno del microservicio
+├── users-service-secret.yaml     # JWT Secret
+├── users-service-deployment.yaml # Deployment con autoscaling
+├── users-service-service.yaml    # Service interno
+├── users-service-ingress.yaml    # Ingress para URL pública
+└── users-service-hpa.yaml        # HorizontalPodAutoscaler
+```
+
+### Despliegue manual
+
+```bash
+# 1) Configurar kubectl con tu kubeconfig
+export KUBECONFIG=./kubeconfig.yaml
+# O en Windows PowerShell:
+# $env:KUBECONFIG=".\kubeconfig.yaml"
+
+# 2) Verificar conexión al cluster
+kubectl cluster-info
+kubectl get nodes
+
+# 3) Desplegar PostgreSQL
+kubectl apply -f k8s/postgres-configmap.yaml
+kubectl apply -f k8s/postgres-secret.yaml
+kubectl apply -f k8s/postgres-pvc.yaml
+kubectl apply -f k8s/postgres-statefulset.yaml
+kubectl apply -f k8s/postgres-service.yaml
+
+# 4) Esperar a que PostgreSQL esté listo
+kubectl wait --for=condition=ready pod -l app=postgres --timeout=300s
+
+# 5) Crear secret para pull de imágenes desde GitHub Container Registry
+kubectl create secret docker-registry ghcr-secret \
+  --docker-server=ghcr.io \
+  --docker-username=TU_GITHUB_USERNAME \
+  --docker-password=TU_GITHUB_TOKEN \
+  --docker-email=TU_EMAIL
+
+# 6) Desplegar Users Service
+kubectl apply -f k8s/users-service-configmap.yaml
+kubectl apply -f k8s/users-service-secret.yaml
+kubectl apply -f k8s/users-service-deployment.yaml
+kubectl apply -f k8s/users-service-service.yaml
+kubectl apply -f k8s/users-service-ingress.yaml
+kubectl apply -f k8s/users-service-hpa.yaml
+
+# 7) Verificar el despliegue
+kubectl get pods -l app=users-service
+kubectl get svc users-service
+kubectl get ingress users-service-ingress
+kubectl get hpa users-service-hpa
+
+# 8) Ver logs del servicio
+kubectl logs -f deployment/users-service
+```
+
+### Configuración importante
+
+#### **URL Pública**
+- El servicio estará disponible en: `https://users.inf326.nursoft.dev`
+- Swagger docs: `https://users.inf326.nursoft.dev/docs`
+
+#### **Autoscaling**
+El HPA (HorizontalPodAutoscaler) está configurado para:
+- **Min replicas:** 1
+- **Max replicas:** 2
+- **Métricas:**
+  - CPU > 70% → escalar
+  - Memoria > 80% → escalar
+
+#### **Persistencia**
+- PostgreSQL usa un PersistentVolumeClaim de 5Gi
+- Los datos persisten incluso si el pod se reinicia
+- Storage class: `do-block-storage` (DigitalOcean)
+
+#### **Conexión a RabbitMQ existente**
+El microservicio se conecta al RabbitMQ del cluster:
+```
+amqp://guest:guest@message-broker.default.svc.cluster.local:5672/
+```
+
+### Actualizar configuración
+
+Para cambiar variables de entorno o secrets:
+
+```bash
+# 1) Edita los archivos en k8s/
+# 2) Aplica los cambios
+kubectl apply -f k8s/users-service-configmap.yaml
+kubectl apply -f k8s/users-service-secret.yaml
+
+# 3) Reinicia el deployment para que tome los nuevos valores
+kubectl rollout restart deployment/users-service
+```
+
+### Comandos útiles
+
+```bash
+# Ver estado del autoscaling
+kubectl get hpa users-service-hpa --watch
+
+# Escalar manualmente (temporal)
+kubectl scale deployment/users-service --replicas=2
+
+# Ver métricas de pods
+kubectl top pods -l app=users-service
+
+# Ejecutar comandos dentro de un pod
+kubectl exec -it deployment/users-service -- /bin/sh
+
+# Ver eventos del deployment
+kubectl describe deployment users-service
+
+# Eliminar todo el despliegue
+kubectl delete -f k8s/
+```
+
+---
+
 ## Migraciones
 
 Generar una nueva migración al cambiar modelos:
@@ -315,11 +453,15 @@ Errores comunes:
 
 ## Roadmap
 
+- ✅ **Despliegue en Kubernetes con autoscaling**
+- ✅ **URL pública con HTTPS**
 - Implementar **Transactional Outbox** para eventos confiables  
 - Políticas de contraseñas y verificación de email  
 - Rate limiting en `/auth/login`  
 - Endpoint `/admin` para gestión avanzada  
 - Tests con `pytest` + `httpx`  
 - Trazabilidad con **OpenTelemetry**
+- Monitoreo con Prometheus y Grafana
+- CI/CD pipeline (opcional)
 
 ---
