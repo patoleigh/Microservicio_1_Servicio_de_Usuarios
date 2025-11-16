@@ -82,7 +82,8 @@ users-service/
 
 ## API v1 (contratos)
 
-> Base URL: `http://localhost:8000`
+> Base URL local: `http://localhost:8000`  
+> Base URL producción: `https://users.inf326.nursoft.dev`
 
 ### `POST /v1/users/register`
 
@@ -356,6 +357,7 @@ kubectl logs -f deployment/users-service
 #### **URL Pública**
 - El servicio estará disponible en: `https://users.inf326.nursoft.dev`
 - Swagger docs: `https://users.inf326.nursoft.dev/docs`
+- **Nota:** El servicio usa un subdominio dedicado (no path-based routing)
 
 #### **Autoscaling**
 El HPA (HorizontalPodAutoscaler) está configurado para:

@@ -13,7 +13,7 @@ cp .env.example .env.local
 ```
 2. Ajusta la variable `VITE_API_BASE_URL` si es necesario. Por defecto usa el gateway desplegado:
 ```
-VITE_API_BASE_URL=http://134.199.176.197/apigateway
+VITE_API_BASE_URL=https://apigateway.grupo1.inf326.nursoft.dev
 ```
 
 ## Ejecutar en desarrollo

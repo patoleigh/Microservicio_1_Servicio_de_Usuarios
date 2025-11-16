@@ -1,14 +1,15 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: api-gateway-hpa
+  name: api-gateway-grupo1-hpa
   labels:
-    app: api-gateway
+    app: api-gateway-grupo1
+    grupo: grupo1
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: api-gateway
+    name: api-gateway-grupo1
   minReplicas: 2
   maxReplicas: 5
   metrics:

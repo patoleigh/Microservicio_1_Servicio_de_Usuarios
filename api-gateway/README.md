@@ -1,6 +1,9 @@
-# API Gateway - Sistema de Mensajería para Estudiantes
+# API Gateway - Sistema de Mensajería para Estudiantes (Grupo 1)
 
 Este es el API Gateway que integra todos los microservicios del sistema de mensajería para estudiantes de Ingeniería Civil Informática.
+
+**URL Pública:** `https://apigateway.grupo1.inf326.nursoft.dev`  
+**Documentación:** `https://apigateway.grupo1.inf326.nursoft.dev/docs`
 
 ## Servicios Integrados
 

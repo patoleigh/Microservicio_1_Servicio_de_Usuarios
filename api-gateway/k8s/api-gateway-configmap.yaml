@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: api-gateway-config
+  name: api-gateway-grupo1-config
   labels:
-    app: api-gateway
+    app: api-gateway-grupo1
+    grupo: grupo1
 data:
   APP_NAME: "api-gateway"
   APP_VERSION: "v1"
@@ -17,5 +18,5 @@ data:
   PRESENCE_SERVICE_URL: "http://presence-service.default.svc.cluster.local:80"
   CHANNEL_SERVICE_URL: "http://channel-api-service.default.svc.cluster.local:8000"
   FILES_SERVICE_URL: "http://file-service-api.file-service.svc.cluster.local:80"
-  # Path prefix para Ingress
-  ROOT_PATH: "/apigateway"
+  # Sin ROOT_PATH - usando subdominio dedicado
+  ROOT_PATH: ""

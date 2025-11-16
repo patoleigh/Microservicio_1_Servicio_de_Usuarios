@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://134.199.176.197/apigateway'
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://apigateway.grupo1.inf326.nursoft.dev'
 
 function buildHeaders(extra?: Record<string, string>) {
   const headers: Record<string, string> = {
