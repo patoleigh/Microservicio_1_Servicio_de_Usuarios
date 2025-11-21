@@ -11,18 +11,20 @@ export default function TopBar() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 16, alignItems: 'center', padding: 12, borderBottom: '1px solid #ddd' }}>
-      <strong>Student Messaging</strong>
-      <Link to="/">Inicio</Link>
-      <Link to="/channels">Canales</Link>
-      <div style={{ marginLeft: 'auto' }}>
-        {user ? (
-          <>
-            <span style={{ marginRight: 8 }}>{user.username}</span>
-            <button onClick={onLogout}>Salir</button>
-          </>
-        ) : null}
+    <header className="bg-white border-b shadow-sm sticky top-0 z-10">
+      <div className="container-page flex items-center gap-6">
+        <Link to="/" className="text-xl font-bold text-blue-700">Student Messaging</Link>
+        <nav className="flex items-center gap-4 text-sm">
+          <Link to="/" className="text-gray-700 hover:text-blue-700">Inicio</Link>
+          <Link to="/channels" className="text-gray-700 hover:text-blue-700">Canales</Link>
+        </nav>
+        <div className="ml-auto flex items-center gap-3">
+          {user && <span className="text-sm text-gray-700">{user.username}</span>}
+          {user && (
+            <button onClick={onLogout} className="btn-primary">Salir</button>
+          )}
+        </div>
       </div>
-    </div>
+    </header>
   )
 }

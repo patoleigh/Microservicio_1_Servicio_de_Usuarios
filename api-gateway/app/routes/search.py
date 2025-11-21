@@ -37,14 +37,6 @@ async def get_thread_by_id(
     """Obtener thread por ID"""
     return await search_client.get(f"/api/threads/id/{thread_id}")
 
-@router.get("/threads/category/{category}")
-async def search_threads_by_category(
-    category: str,
-    current_user: Optional[Dict] = Depends(optional_auth)
-):
-    """Buscar threads por categoría"""
-    return await search_client.get(f"/api/threads/category/{category}")
-
 @router.get("/threads/author/{author}")
 async def search_threads_by_author(
     author: str,
@@ -53,14 +45,6 @@ async def search_threads_by_author(
     """Buscar threads por autor"""
     return await search_client.get(f"/api/threads/author/{author}")
 
-@router.get("/threads/tag/{tag}")
-async def search_threads_by_tag(
-    tag: str,
-    current_user: Optional[Dict] = Depends(optional_auth)
-):
-    """Buscar threads por tag"""
-    return await search_client.get(f"/api/threads/tag/{tag}")
-
 @router.get("/threads/keyword/{keyword}")
 async def search_threads_by_keyword(
     keyword: str,
@@ -68,6 +52,26 @@ async def search_threads_by_keyword(
 ):
     """Buscar threads por palabra clave"""
     return await search_client.get(f"/api/threads/keyword/{keyword}")
+
+@router.get("/threads/status/{status}")
+async def search_threads_by_status(
+    status: str,
+    current_user: Optional[Dict] = Depends(optional_auth)
+):
+    """Buscar threads por estado"""
+    return await search_client.get(f"/api/threads/status/{status}")
+
+@router.get("/threads/daterange")
+async def search_threads_by_daterange(
+    start_date: str,
+    end_date: str,
+    current_user: Optional[Dict] = Depends(optional_auth)
+):
+    """Buscar threads por rango de fechas"""
+    return await search_client.get(
+        "/api/threads/daterange",
+        params={"start_date": start_date, "end_date": end_date}
+    )
 
 @router.get("/health")
 async def search_health():

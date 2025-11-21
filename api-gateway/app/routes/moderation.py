@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Header
+from fastapi.security import HTTPAuthorizationCredentials
 from typing import Dict, Any, Optional
 from ..clients.base import moderation_client
-from ..auth import get_current_user, optional_auth
+from ..auth import get_current_user, optional_auth, security
 
 router = APIRouter(prefix="/moderation", tags=["Moderation"])
 
@@ -12,59 +13,77 @@ async def check_content(
 ):
     """
     Verificar toxicidad de contenido
-    Body: {"text": "contenido a moderar", "language": "es"}
-    
-    El servicio usa modelo multilingual Detoxify y retorna:
-    - toxicity: 0.0-1.0
-    - threshold: low(0.5), medium(0.7), high(0.9)
-    - action: "allow", "warn", "block"
+    Body: {
+        "content": "contenido a moderar",
+        "message_id": "msg-id",
+        "user_id": "user-id",
+        "channel_id": "channel-id"
+    }
     """
-    return await moderation_client.post("/api/v1/moderate", json=content)
+    return await moderation_client.post("/api/v1/moderation/check", json=content)
 
-@router.get("/user/{user_id}/strikes")
-async def get_user_strikes(
+@router.get("/status/{user_id}/{channel_id}")
+async def get_user_moderation_status(
     user_id: str,
+    channel_id: str,
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
-    """
-    Obtener strikes de un usuario
-    
-    Sistema de strikes:
-    - 3 strikes -> ban temporal (24h)
-    - 5 strikes -> ban permanente
-    - Strikes se resetean cada 30 días
-    """
+    """Obtener estado de moderación de un usuario en un canal"""
     return await moderation_client.get(
-        f"/api/v1/users/{user_id}/strikes",
-        headers={"Authorization": authorization}
+        f"/api/v1/moderation/status/{user_id}/{channel_id}",
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.get("/blacklist")
-async def get_blacklist(current_user: Dict = Depends(get_current_user)):
+async def get_blacklist(
+    current_user: Dict = Depends(get_current_user),
+    limit: int = 50,
+    skip: int = 0
+):
     """Obtener lista de palabras prohibidas"""
-    return await moderation_client.get("/api/v1/blacklist")
+    return await moderation_client.get(
+        "/api/v1/blacklist/words",
+        params={"limit": limit, "skip": skip}
+    )
 
 @router.post("/blacklist")
 async def add_to_blacklist(
     word_data: Dict[str, Any],
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Agregar palabra a blacklist (requiere permisos de admin)"""
     return await moderation_client.post(
-        "/api/v1/blacklist",
+        "/api/v1/blacklist/words",
         json=word_data,
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
-@router.get("/bans")
-async def get_active_bans(
+@router.delete("/blacklist/{word_id}")
+async def remove_from_blacklist(
+    word_id: str,
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Eliminar palabra de blacklist"""
+    return await moderation_client.delete(
+        f"/api/v1/blacklist/words/{word_id}",
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
+    )
+
+@router.get("/admin/banned-users")
+async def get_banned_users(
+    channel_id: Optional[str] = None,
+    current_user: Dict = Depends(get_current_user),
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Obtener lista de usuarios baneados"""
+    params = {}
+    if channel_id:
+        params["channel_id"] = channel_id
     return await moderation_client.get(
-        "/api/v1/bans",
-        headers={"Authorization": authorization}
+        "/api/v1/admin/banned-users",
+        params=params,
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )

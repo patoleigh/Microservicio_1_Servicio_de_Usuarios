@@ -3,27 +3,19 @@ from jose import JWTError, jwt
 from typing import Optional
 from .config import settings
 
-async def get_current_user(authorization: Optional[str] = Header(None)):
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends
+
+security = HTTPBearer()
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Dependency para extraer y validar el JWT token.
     Retorna el payload del token si es válido.
     """
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    token = credentials.credentials
     
     try:
-        # Extraer el token del header "Bearer <token>"
-        scheme, token = authorization.split()
-        if scheme.lower() != "bearer":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication scheme",
-            )
-        
         # Decodificar y validar el JWT
         payload = jwt.decode(
             token,
@@ -33,11 +25,6 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         
         return payload
         
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization header format",
-        )
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

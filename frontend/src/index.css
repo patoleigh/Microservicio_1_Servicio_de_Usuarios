@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { 
+    height: 100%; 
+    @apply bg-cyber-black text-gray-200 font-sans overflow-hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-mono text-white;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-cyber-dark;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cyber-gray rounded hover:bg-cyber-primary/50 transition-colors;
+  }
+}
+
+@layer components {
+  .btn-primary { 
+    @apply bg-cyber-primary/10 text-cyber-primary border border-cyber-primary/50 
+           px-4 py-2 rounded-none hover:bg-cyber-primary/20 hover:border-cyber-primary 
+           transition-all duration-300 font-mono uppercase tracking-wider
+           disabled:opacity-50 disabled:cursor-not-allowed; 
+  }
+  
+  .card { 
+    @apply bg-cyber-dark/80 border border-cyber-gray backdrop-blur-sm p-6; 
+  }
+  
+  .container-page { 
+    @apply max-w-7xl mx-auto p-6 h-full overflow-y-auto; 
+  }
+
+  .cyber-input {
+    @apply bg-cyber-black border border-cyber-gray text-white px-4 py-2 w-full
+           focus:border-cyber-primary focus:ring-1 focus:ring-cyber-primary/50 focus:outline-none
+           transition-all font-mono placeholder-gray-600;
+  }
+}
+
+/* Global Effects */
+.scanline-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1)
+  );
+  background-size: 100% 4px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+}

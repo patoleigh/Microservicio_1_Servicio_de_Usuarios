@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Header
+from fastapi.security import HTTPAuthorizationCredentials
 from typing import Dict, Any, Optional
 from ..clients.base import users_client
-from ..auth import get_current_user, optional_auth
+from ..auth import get_current_user, optional_auth, security
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -18,25 +19,25 @@ async def login(credentials: Dict[str, Any]):
 @router.get("/me")
 async def get_me(
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Obtener perfil del usuario actual"""
     return await users_client.get(
         "/usersservice/v1/users/me",
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.patch("/me")
 async def update_me(
     user_data: Dict[str, Any],
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Actualizar perfil del usuario actual"""
     return await users_client.patch(
         "/usersservice/v1/users/me",
         json=user_data,
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.get("/health")

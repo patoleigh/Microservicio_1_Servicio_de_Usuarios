@@ -5,11 +5,13 @@ import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ChannelsPage from './pages/ChannelsPage'
 import ChannelDetailPage from './pages/ChannelDetailPage'
+import ChatbotsPage from './pages/ChatbotsPage'
+import AppLayout from './components/layout/AppLayout'
 
 function Protected({ children }: { children: JSX.Element }) {
   const { token } = useAuth()
   if (!token) return <Navigate to="/login" replace />
-  return children
+  return <AppLayout>{children}</AppLayout>
 }
 
 export default function App() {
@@ -39,6 +41,14 @@ export default function App() {
           element={
             <Protected>
               <ChannelDetailPage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/chatbots"
+          element={
+            <Protected>
+              <ChatbotsPage />
             </Protected>
           }
         />

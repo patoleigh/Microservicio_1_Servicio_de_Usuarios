@@ -13,6 +13,7 @@ type AuthContextType = {
   user: User | null
   setToken: (t: string | null) => void
   setUser: (u: User | null) => void
+  login: (u: string, p: string) => Promise<void>
   logout: () => void
 }
 
@@ -42,18 +43,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const me = await api.get('/users/me')
           setUser(me)
-        } catch {}
+        } catch { }
       }
     }
     load()
   }, [])
+
+  const login = async (usernameOrEmail: string, password: string) => {
+    const res = await api.post('/users/login', {
+      username_or_email: usernameOrEmail,
+      password
+    })
+    if (res?.access_token) {
+      // Set token in localStorage immediately so api.get('/users/me') can use it
+      localStorage.setItem('token', res.access_token)
+      setToken(res.access_token)
+
+      try {
+        const me = await api.get('/users/me')
+        setUser(me)
+        // Update presence
+        await api.post('/presence/', { userId: me.id, status: 'online', device: 'web' })
+      } catch (e) {
+        console.error('Failed to fetch user profile or update presence:', e)
+        // If fetching profile fails, we should probably logout or handle it
+      }
+    } else {
+      throw new Error('Login failed')
+    }
+  }
 
   const logout = () => {
     setToken(null)
     setUser(null)
   }
 
-  const value = useMemo(() => ({ token, user, setToken, setUser, logout }), [token, user])
+  const value = useMemo(() => ({ token, user, setToken, setUser, login, logout }), [token, user])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

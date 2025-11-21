@@ -10,13 +10,17 @@ data:
   APP_VERSION: "v1"
   ENV: "production"
   JWT_ALG: "HS256"
-  # URLs internas de los microservicios (dentro del cluster K8s)
-  USERS_SERVICE_URL: "http://users-service.default.svc.cluster.local:80"
-  MODERATION_SERVICE_URL: "http://moderation-service.default.svc.cluster.local:8000"
-  MESSAGES_SERVICE_URL: "http://messages-service.default.svc.cluster.local:80"
-  SEARCH_SERVICE_URL: "http://search-service.default.svc.cluster.local:8000"
-  PRESENCE_SERVICE_URL: "http://presence-service.default.svc.cluster.local:80"
-  CHANNEL_SERVICE_URL: "http://channel-api-service.default.svc.cluster.local:8000"
-  FILES_SERVICE_URL: "http://file-service-api.file-service.svc.cluster.local:80"
+  # URLs de microservicios - Todos externos (otros grupos)
+  # Grupo 1 (propio)
+  USERS_SERVICE_URL: "https://users.inf326.nursoft.dev"
+  # Otros grupos
+  CHANNEL_SERVICE_URL: "https://channel-api.inf326.nur.dev"
+  MESSAGES_SERVICE_URL: "https://messages-service.kroder.dev"
+  MODERATION_SERVICE_URL: "https://moderation.inf326.nur.dev"
+  PRESENCE_SERVICE_URL: "https://presence-134-199-176-197.nip.io"
+  SEARCH_SERVICE_URL: "https://searchservice.inf326.nursoft.dev"
+  FILES_SERVICE_URL: "http://file-service-134-199-176-197.nip.io"
+  WIKIPEDIA_SERVICE_URL: "http://wikipedia-chatbot-134-199-176-197.nip.io"
+  CHATBOT_PROG_SERVICE_URL: "https://chatbotprogra.inf326.nursoft.dev"
   # Sin ROOT_PATH - usando subdominio dedicado
   ROOT_PATH: ""

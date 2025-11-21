@@ -8,7 +8,8 @@ class ServiceClient:
     
     def __init__(self, base_url: str):
         self.base_url = base_url
-        self.client = httpx.AsyncClient(timeout=30.0)
+        # Deshabilitar verificación SSL para servicios con certificados auto-firmados
+        self.client = httpx.AsyncClient(timeout=30.0, verify=False)
     
     async def _request(
         self,
@@ -76,3 +77,7 @@ files_client = ServiceClient(settings.FILES_SERVICE_URL)
 moderation_client = ServiceClient(settings.MODERATION_SERVICE_URL)
 presence_client = ServiceClient(settings.PRESENCE_SERVICE_URL)
 search_client = ServiceClient(settings.SEARCH_SERVICE_URL)
+wikipedia_client = ServiceClient(settings.WIKIPEDIA_SERVICE_URL)
+chatbot_prog_client = ServiceClient(settings.CHATBOT_PROG_SERVICE_URL)
+threads_client = ServiceClient(settings.THREADS_SERVICE_URL)
+files_client = ServiceClient(settings.FILES_SERVICE_URL)

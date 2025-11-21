@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Header
+from fastapi.security import HTTPAuthorizationCredentials
 from typing import Dict, Any
 from ..clients.base import messages_client
-from ..auth import get_current_user
+from ..auth import get_current_user, security
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
@@ -10,7 +11,7 @@ async def send_message(
     thread_id: str,
     message_data: Dict[str, Any],
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     Enviar mensaje a un thread
@@ -22,19 +23,19 @@ async def send_message(
     return await messages_client.post(
         f"/threads/{thread_id}/messages",
         json=message_data,
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.get("/threads/{thread_id}")
 async def get_thread_messages(
     thread_id: str,
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Obtener todos los mensajes de un thread"""
     return await messages_client.get(
         f"/threads/{thread_id}/messages",
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.put("/threads/{thread_id}/messages/{message_id}")
@@ -43,7 +44,7 @@ async def update_message(
     message_id: str,
     message_data: Dict[str, Any],
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """
     Actualizar un mensaje específico
@@ -54,7 +55,7 @@ async def update_message(
     return await messages_client.put(
         f"/threads/{thread_id}/messages/{message_id}",
         json=message_data,
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
 
 @router.delete("/threads/{thread_id}/messages/{message_id}")
@@ -62,10 +63,10 @@ async def delete_message(
     thread_id: str,
     message_id: str,
     current_user: Dict = Depends(get_current_user),
-    authorization: str = Header(...)
+    token_creds: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Eliminar un mensaje específico"""
     return await messages_client.delete(
         f"/threads/{thread_id}/messages/{message_id}",
-        headers={"Authorization": authorization}
+        headers={"Authorization": f"Bearer {token_creds.credentials}"}
     )
